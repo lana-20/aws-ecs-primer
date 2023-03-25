@@ -1,4 +1,4 @@
-# Amazon Elastic Container Service (ECS) Primer
+# [Amazon Elastic Container Service (ECS) Primer](https://miro.com/app/board/uXjVP_LMhzQ=/?share_link_id=924732886799)
 
 ## AWS ECS:
 
@@ -148,3 +148,98 @@ Which type of workload would be best to deploy as a service rather than a task?
 - [x] Long-running apps
 - [ ] Lambda functions
 - [ ] None of the above
+
+
+## Task Placement Strategies
+
+How Amazon ECS actually places the tasks on the container instances in the cluster when you are using the EC2 launch type
+
+<img width="800" src="https://user-images.githubusercontent.com/70295997/227667866-f0c2c4ab-cf78-4b7a-aaec-bb7817335da1.png">
+
+### Task placement
+
+This scenario has 10 container instances. You are making a request to run some tasks or to create a service. As part of that request, you specify CPU, memory, and networking requirements.
+
+You also provide other constraints, such as a specific Availability Zone, Amazon Machine Image (AMI), or instance type.
+
+Lastly, you specify the strategy you prefer ECS to use when starting the tasks; for example, spreading across multiple container instances to maximize availability or consolidating across a smaller number of instances to improve utilization.
+
+At the end of that process, ECS identifies a set of instances that satisfies the requirements for the task you want to run and will place those tasks across your cluster based on the criteria specified.
+
+![image](https://user-images.githubusercontent.com/70295997/227667932-68e3760d-44eb-4b9e-870f-de5d25fdd7d1.png)
+
+
+### Strategies and constraints
+
+Remember that each task is an instance of a task definition. The task definition specifies the resources required in addition to the task placement information, such as placement strategies and placement constraints.
+
+Placement strategies are best-effort: ECS attempts to place tasks even when the most optimal placement option is unavailable.
+
+The supported placement strategy types are:
+• **Random**: Places tasks randomly across Container instances.
+• **Binpack**: Places tasks based on the least available amount of CPU or memory. This minimizes the number of instances in use and gets the most utilization out of every instance.
+• **Spread**: Places tasks evenly based on a specified value, such as Availability Zone. Service tasks are spread based on the tasks from that service.
+
+Placement constraints are binding, and they can prevent task placement. The supported constraints are:
+•  **distinctInstance**: Places each task on a different container instance.
+•  **memberOf**: Places tasks based on an expression; for example, group membership.
+
+![image](https://user-images.githubusercontent.com/70295997/227668446-b404ecae-f171-4221-b8df-c1422657b6fa.png)
+
+
+### Targeting instance type and zone
+
+Placement strategy examples. In this first example, the task definition contains a placement constraint targeting a specific instance type (t2.small) and excluding a specific Availability Zone (us-east-1d).
+
+![image](https://user-images.githubusercontent.com/70295997/227668467-8ae3fb65-8d82-4bf1-9327-04533e740f46.png)
+
+### Spread across zone and binpack
+
+In this example, the task definition is using two placement strategies: Spreading tasks across Availability Zones and then bin packing based on memory.
+
+ The binpack strategy gets its name from the bin packing problem in the physical world, where containers of different sizes must be packed into bins by using the smallest number of bins possible.
+ 
+ ### ![image](https://user-images.githubusercontent.com/70295997/227668490-aa657314-7be7-4996-b634-d1fb85287802.png)
+
+Affinity and anti-affinity 
+
+In this example, we have two task definitions, both of which are using placement constraints.
+
+The first definition requires that its tasks be placed on instances that are part of the webserver group, which is a requirement for these applications to function properly.
+
+The second task definition uses a constraint to specify the opposite: requires the scheduler to place its tasks anywhere except instances that are part of the webserver group. Remember that constraints are binding. If there had been no instances in the webserver group with sufficient resources available, then task placement for the first definition would have failed.
+
+![image](https://user-images.githubusercontent.com/70295997/227668530-f2a3adac-479a-4f84-b588-546e830b8e98.png)
+
+### Running a service
+
+Services can take advantage of the same placement strategies and constraints while maintaining the desired number of tasks. In this example service definition, the scheduler places tasks only on T2 instances, spreads those tasks across Availability Zones, and bin packs the tasks onto the fewest number of instances in each zone by memory.
+
+![image](https://user-images.githubusercontent.com/70295997/227668554-e494f6ed-19c3-4c66-912e-6b40374a55aa.png)
+
+### Multiple services on a cluster
+
+Let's look at a couple of service examples. In this example, you have multiple services running on the same cluster. The first one is bin packing on memory, and the second is spread acrosS Availability Zones.
+
+![image](https://user-images.githubusercontent.com/70295997/227668577-2264d1ff-286f-4484-babd-61af10ea7acc.png)
+
+### Services-distinct instances
+
+Services can also use the distinctInstance placement constraint to ensure landing on specific instance types, such as GPU- accelerated instances or instances with specific CPU and memory requirements.
+
+### Knowledge Check
+
+How do task placement strategies and task placement constraints affect how tasks are placed tasks on instances?
+- [x] Strategies are best-effort. Constraints are binding.
+- [ ] Strategies are binding. Constraints are best-effort.
+- [ ] Both strategies and constraints are best-effort.
+- [ ] Both strategies and constraints are binding.
+
+Which ECS task placement strategy minimizes the number of instances in use?
+- [x] Binpack
+- [ ] Random
+- [ ] Spread
+- [ ] Overload
+
+
+
