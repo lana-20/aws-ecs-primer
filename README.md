@@ -241,5 +241,46 @@ Which ECS task placement strategy minimizes the number of instances in use?
 - [ ] Spread
 - [ ] Overload
 
+## Integrate ECS with other AWS services
+
+![image](https://user-images.githubusercontent.com/70295997/227737021-5599f893-9f33-4399-8978-269c85a7cc44.png)
+
+### Containers within AWS
+
+One of the strengths of running container-based workloads with ECS is the tight integration with other AWS services.
+
+You can use:
+- Amazon Simple Notification (Amazon SNS) and Amazon Simple Queue (Amazon SQS) services for decoupling.
+- Classic, Application, and Network load balancers.
+- Route 53 for DNS and service discovery.
+- Identity and Access Management (IAM) for authentication and authorization.
+- Secrets Manager for managing encrypted passwords, credentials, tokens, and other secrets.
+- API Gateway to expose the services to the outside world.
+- AWS Developer tools such as CodePipeline for continuous integration and continuous development (CI/CD).
+- Amazon CloudWatch for monitoring, logging, and alerting.
+
+![image](https://user-images.githubusercontent.com/70295997/227737057-fe4e87e3-22bb-422b-bcf9-8162d8864bd8.png)
+
+### ECR: Elastic Container Registry
+
+Let's look at some of the most common integration patterns in ECS. Earlier, we briefly mentioned Amazon ECR: the Elastic Container Registry.
+
+ Remember: After images are built, they are immutable.
+
+When launching a container, ECS pulls images from a public or private image registry. ECR is a fully managed, cloud-based Docker image registry that is fully integrated with Amazon ECS and the Docker CLI. ECR is scalable, highly available, and secure images are encrypted at rest, with IAM-based access and authorization controls.
+
+![image](https://user-images.githubusercontent.com/70295997/227737113-5b9f32cc-ba84-4301-8c29-5c08d3760001.png)
+
+### Microservice architecture for integration
+
+Here is a basic microservice architecture that highlights ECS integration with other AWS services. Clients access the containerized application through DNS, using Route 53, or by using APl calls from a front-end application through the Amazon API Gateway. A load balancer manages traffic to ECS clusters and a database instance from Amazon RDS handles persistent data storage. Other AWS services at work here include ECR that manages the container images, IAM that handles authentication and authorization, and CloudWatch that collects metrics.
+
+<img width="800" src="https://user-images.githubusercontent.com/70295997/227737371-06a574ec-c5b5-4334-9c79-3ef7343f1105.png">
+
+### Service discovery
+
+ECS includes integrated service discovery. This makes it possible for an ECS service to automatically register itself with a predictable and friendly DNS name in Amazon Route 53.
+
+In this architecture, we have a number of container-powered microservices, all in their own Auto Scaling groups to respond to changing loads. As services scale up or down in response to load or container health, ECS keeps the records in Route 53 up-to-date, allowing other services to look up where they need to make connections based on the state of each service.
 
 
