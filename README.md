@@ -283,4 +283,38 @@ ECS includes integrated service discovery. This makes it possible for an ECS ser
 
 In this architecture, we have a number of container-powered microservices, all in their own Auto Scaling groups to respond to changing loads. As services scale up or down in response to load or container health, ECS keeps the records in Route 53 up-to-date, allowing other services to look up where they need to make connections based on the state of each service.
 
+<img width="1000" src="https://user-images.githubusercontent.com/70295997/227748282-1af95e54-d48b-4d40-943c-63dbbcca3e84.png">
+
+### Continuous deployment
+
+Here is one way of doing continuous deployment (CD) using the AWS CodeStar group of services.
+1. Developers continually integrate their changes together into a main branch hosted in AWS CodeCommit.
+2. AWS CodePipeline uses CloudWatch Events to detect changes in your AWS CodeCommit Source repository and triggers an execution of the CD pipeline when a new revision is found.
+3. AWS CodePipeline sends the new revision to AWS CodeBuild, which builds a Docker container image from the source Code.
+4. AWS CodeBuild pushes the newly built Docker container image tagged with the build ID to an Amazon ECR repository.
+5. CodePipeline initiates an update of the AWS CloudFormation stack, which defines the Amazon ECS task definition and service.
+6. AWS CloudFormation creates a new task definition revision referencing the newly built image, and updates ECS
+7. ECS fetches the new container from ECR and replaces the old task with the new one, which completes the deployment.
+
+![image](https://user-images.githubusercontent.com/70295997/227748323-11f135ca-1aac-4edc-a768-bf09b5819108.png)
+
+### Blue-Green deployments
+
+Blue/green deployments are used to deploy software updates with less risk by creating two separate environments, blue and green. "Blue" is the current running version of your application, and "green" is the new version you will deploy. This type of deployment gives you an opportunity to test features in the green environment without impacting the current running version of your application. When you're satisfied that the green version is working properly, you can gradually reroute the traffic from the old blue environment to the new green environment. By following this method you can update and roll back features with near-zero downtime.
+
+Containers can ease the adoption of blue/green deployments because they're easily packaged and behave consistently as they're moved between environments. This example shows how ECS can be used for blue/green deployments, with AWS CodeDeploy handling the switchover.
+1. First you define your ECS service and specify blue/green deployment (powered by AWS CodeDeploy) as the deployment type.
+2. The service should include an Application Load Balancer that is configured to listen on two ports.
+3. ECS creates an application and deployment group in AWS CodeDeploy for your service.
+4. When a task definition for one of the tasks in the service is updated, CodeDeploy deploys the new (green) copy of the service, and traffic for the green service is directed to the second port; in this example port 8080. If there are any problems during deployment, you can stop and roll back to the blue service with no impact to users.
+5. You can now perform automated or manual testing on the green service. When the green service has been validated, the deployment is completed by swapping the listener rules on the Application Load Balancer and sending user traffic to the green service.
+
+![image](https://user-images.githubusercontent.com/70295997/227748360-eec6cef5-c5d8-410f-80ef-644de617a1a6.png)
+
+### Service autoscaling: CloudWatch
+
+You can configure ECS to use Service Auto Scaling to adjust its desired count up or down in response to CloudWatch alarms. ECS publishes CloudWatch metrics with your service's average CPU and memory usage. You can use these service utilization metrics to Scale your service out to deal with high demand at peak times, and to scale your service in to reduce costs during periods of low utilization.
+
+
+
 
