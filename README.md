@@ -30,7 +30,6 @@ Scalability is a factor to  consider with microservices.
 
 <img src="https://user-images.githubusercontent.com/70295997/210415410-785f346a-e906-4842-8f94-444a373fa64f.png" width=500>
 
-
 #### One host, multiple containers
 
 Running one or two containers on a single host is simple.
@@ -315,6 +314,48 @@ Containers can ease the adoption of blue/green deployments because they're easil
 
 You can configure ECS to use Service Auto Scaling to adjust its desired count up or down in response to CloudWatch alarms. ECS publishes CloudWatch metrics with your service's average CPU and memory usage. You can use these service utilization metrics to Scale your service out to deal with high demand at peak times, and to scale your service in to reduce costs during periods of low utilization.
 
+### Knowledge Check
 
+Which AWS service facilitates service discovery through DNS in a microservices architecture?
+- [ ] Amazon SNS
+- [ ] Amazon API Gateway
+- [ ] Amazon CloudWatch
+- [x] Amazon Route53
+
+## Security features of ECS
+
+![image](https://user-images.githubusercontent.com/70295997/227748460-68842a06-2b49-42d9-a405-6ffa001d7868.png)
+
+### Access management: IAM Roles
+
+Each task can have its own IAM role, providing granular permissions for service access. In this example, Task A has been granted access to data in a DynamoDB table. A new task, Task B, needs to access data in an S3 bucket. To allow this, you create a policy in IAM that grants permission to retrieve objects from a specific S3 bucket.
+
+Next, you create a role in IAM with this policy attached. The IAM role you created is added to the task definition for Task B, allowing any instance of that task to retrieve objects from the S3 bucket. Task B does not have permission to access data in Amazon DynamoDB, and Task A does not have permission to access the S3 bucket unless you specifically attach the appropriate policy to the role assigned to Task A.
+
+![image](https://user-images.githubusercontent.com/70295997/227748472-cc2991d0-ee83-4bcf-a2fc-36b660652e10.png)
+
+### Managing secrets
+
+Tasks can also retrieve secrets from the Parameter Store, which is integrated with Secrets Manager. Secrets Manager helps you organize and manage important configuration data such as credentials, passwords, and license keys. By using Parameter Store to reference Secrets Manager secrets, you create a consistent and secure process for calling and using secrets and reference data in your code and configuration scripts. Parameter Store functions as a pass-through service for references to Secrets Manager secrets. No data or metadata about secrets is retained in Parameter Store - the reference is stateless.
+
+Secrets Manager encrypts the protected text of a secret by using the AWS Key Management Service (AWS KMS), a key storage and encryption service that's used by many AWS services. This helps ensure that your secret is securely encrypted when it's at rest.
+
+You can attach IAM policies to a role that grants or denies access to specific secrets, and restrict what can with those secrets. In this example: granting read-only permission to the one secret that Task B needs to run. Alternatively, you can attach a policy directly to the secret to grant permissions that specify who is allowed to read or modify the secret and its versions. There are many other uses for Secrets Manager in ECS; for example, accessing the secure credentials to a private registry that contains the container image you want to pul.
+
+![image](https://user-images.githubusercontent.com/70295997/227748486-f966d1cb-ccea-41fa-9c64-f6bb284f71d3.png)
+
+### Daemon scheduling strategy
+
+All of the examples of scheduling services we have looked at so far use the REPLICA scheduling strategy. This strategy places and maintains the desired number of tasks across your cluster based on the task placement strategies and constraints you specify.
+
+When using the EC2 launch type, you also can use the DAEMON scheduling strategy. DAEMON scheduling deploys exactly one task on each active container instance that meets all of the task placement constraints specified in your cluster. This is useful to provide common supporting functionality, Such as logging, monitoring, or backups, for the tasks running your application code. This scheduling strategy automatically tracks the changes in the cluster and deploys the required daemon tasks when new instances join the cluster. This helps you optimize for the CPU and memory required by your applications, enabling you to deploy one daemon task to support all application tasks running on each instance.
+
+### Knowledge Check
+
+How can access to a secret in Secrets Manager be controlled?
+- [ ] A. Each task can have its own IAM role with a policy attached.
+- [ ] B. A policy can be attached directly to the secret.
+- [x] C. Both A and B.
+- [ ] D. None of the above.
 
 
